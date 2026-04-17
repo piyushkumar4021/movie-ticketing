@@ -24,8 +24,14 @@ const movieSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    bookedSeats: {
+      type: [String],
+      default: [],
+      required: false,
+      // Format: "row-col" e.g., "0-1", "2-5"
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Movie", movieSchema);

@@ -233,11 +233,10 @@
         const rowLabels = ['A','B','C','D','E','F'];
         const seatGrid = document.getElementById('seatGrid');
         let selectedSeats = new Set();
-        // Random occupied seats
-        const occupied = new Set();
-        for (let i = 0; i < 8; i++) {
-            occupied.add(Math.floor(Math.random() * rows) + '-' + Math.floor(Math.random() * cols));
-        }
+        // Get booked seats from server
+        const bookedSeatsArray = <%- JSON.stringify(bookedSeats || []) %>;
+        const bookedSeatsSet = new Set(bookedSeatsArray);
+        console.log('Booked seats:', bookedSeatsSet);
 
         for (let r = 0; r < rows; r++) {
             const rowDiv = document.createElement('div');
@@ -248,7 +247,7 @@
                 seat.className = 'seat';
                 seat.dataset.id = r + '-' + c;
                 seat.textContent = (c + 1);
-                if (occupied.has(r + '-' + c)) {
+                if (bookedSeatsSet.has(r + '-' + c)) {
                     seat.classList.add('occupied');
                     seat.title = 'Occupied';
                 } else {
@@ -331,7 +330,7 @@
 
         document.getElementById('bookingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const seats = selectedSeats.size;
+            const seatIds = Array.from(selectedSeats);
             const movieId = document.querySelector('input[name="movieId"]').value;
 
             // Activate step 2 as done
@@ -345,7 +344,7 @@
                 didOpen: () => {
                     setTimeout(async () => {
                         try {
-                            const res = await fetch('/book', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({movieId,seats})});
+                            const res = await fetch('/book', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({movieId,seatIds})});
                             const data = await res.json();
                             if (data.success) {
                                 Swal.fire({icon:'success',title:'Payment Successful!',text:'Redirecting to your ticket…',background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914',timer:2000,timerProgressBar:true,didClose:()=>{window.location.href='/ticket/'+data.bookingId}});

@@ -29,6 +29,12 @@ const bookingSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
+    seatIds: {
+      type: [String],
+      required: true,
+      default: [],
+      // Format: "row-col" e.g., ["0-1", "0-2"]
+    },
     totalPrice: {
       type: Number,
       required: true,
@@ -42,7 +48,7 @@ const bookingSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Booking", bookingSchema);

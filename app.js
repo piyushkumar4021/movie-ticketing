@@ -9,7 +9,7 @@ const Movie = require("./models/Movie");
 const Booking = require("./models/Booking");
 
 const app = express();
-const PORT = 3000;
+const PORT = 5000;
 const JWT_SECRET = "cinemapro-secret-key-2026";
 const MONGO_URI =
   "mongodb://movie-ticketing:hnqB8drowHuphovh@ac-ld4tn1l-shard-00-00.fk0tuga.mongodb.net:27017,ac-ld4tn1l-shard-00-01.fk0tuga.mongodb.net:27017,ac-ld4tn1l-shard-00-02.fk0tuga.mongodb.net:27017/movie-ticketing?ssl=true&replicaSet=atlas-fuz2k5-shard-0&authSource=admin&appName=Cluster0";
@@ -154,25 +154,69 @@ app.get("/movie/:id", requireAuth, async (req, res) => {
   const movie = await Movie.findById(req.params.id).catch(() => null);
   if (!movie)
     return res.status(404).render("404", { message: "Movie not found" });
-  res.render("booking", { movie });
+  res.render("booking", { movie, bookedSeats: movie.bookedSeats || [] });
 });
 
 app.post("/book", requireAuth, async (req, res) => {
-  const { movieId, seats } = req.body;
-  const movie = await Movie.findById(movieId).catch(() => null);
+  const { movieId, seatIds } = req.body;
   const user = res.locals.user;
 
+  // Validate seatIds
+  if (!Array.isArray(seatIds) || seatIds.length === 0)
+    return res
+      .status(400)
+      .json({ success: false, message: "No seats selected" });
+
+  // Fetch the LATEST movie state right before booking to minimize stale-data window
+  const movie = await Movie.findById(movieId).catch(() => null);
   if (!movie)
     return res.status(400).json({ success: false, message: "Movie not found" });
 
+  // Check if any seat is already booked (against latest DB state)
+  const bookedSet = new Set(movie.bookedSeats || []);
+  const unavailableSeats = seatIds.filter((id) => bookedSet.has(id));
+  if (unavailableSeats.length > 0)
+    return res.status(400).json({
+      success: false,
+      message:
+        "Some seats are no longer available. Please select different seats.",
+    });
+
+  // Atomically add seats using $addToSet to prevent race conditions.
+  // $addToSet only adds values that don't already exist in the array,
+  // so even if two requests pass the check above simultaneously,
+  // seats won't be duplicated.
+  const updateResult = await Movie.findByIdAndUpdate(
+    movieId,
+    { $addToSet: { bookedSeats: { $each: seatIds } } },
+    { new: true },
+  );
+
+  // Verify all seats were actually added (none were taken by a concurrent booking)
+  const newBookedSet = new Set(updateResult.bookedSeats || []);
+  const allSeatsBooked = seatIds.every((id) => newBookedSet.has(id));
+  if (!allSeatsBooked) {
+    // Another user beat us — rollback the seats we added
+    await Movie.findByIdAndUpdate(movieId, {
+      $pullAll: { bookedSeats: seatIds },
+    });
+    return res.status(400).json({
+      success: false,
+      message:
+        "Some seats were just booked by another user. Please select different seats.",
+    });
+  }
+
+  // Create booking record
   const booking = await Booking.create({
     movieId: movie._id,
     movieTitle: movie.title,
     userId: user.id,
     name: user.name,
     email: user.email,
-    seats: parseInt(seats),
-    totalPrice: parseInt(seats) * 12,
+    seats: seatIds.length,
+    seatIds: seatIds,
+    totalPrice: seatIds.length * 12,
     bookingDate: new Date().toLocaleDateString(),
     bookingTime: new Date().toLocaleTimeString(),
   });
