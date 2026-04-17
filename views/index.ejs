@@ -3,266 +3,449 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CinemaPro - Movie Ticketing</title>
-    
+    <meta name="description" content="CinemaPro — Book your favourite movies with the ultimate premium cinema experience. Now showing the latest blockbusters.">
+    <title>CinemaPro — Premium Movie Ticketing</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.28/dist/sweetalert2.min.css" rel="stylesheet">
-    
+
     <style>
         :root {
-            --primary-color: #e50914;
-            --secondary-color: #221f1f;
-            --accent-color: #f39c12;
+            --cp-red: #e50914;
+            --cp-red-dark: #b0060f;
+            --cp-gold: #f6c700;
+            --cp-dark: #0a0a0f;
+            --cp-card: #14141f;
+            --cp-surface: #1c1c2b;
+            --cp-border: rgba(255,255,255,.06);
+            --cp-text: #e2e2e8;
+            --cp-muted: #8b8b9e;
         }
 
-        * {
-            scroll-behavior: smooth;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
 
         body {
-            background-color: #0f0f0f;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--cp-dark);
+            color: var(--cp-text);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
         }
 
-        /* Navbar Styling */
+        h1,h2,h3,h4,h5,h6,.navbar-brand { font-family: 'Outfit', sans-serif; }
+
         .navbar {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            border-bottom: 3px solid var(--primary-color);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            background: rgba(10,10,15,.72) !important;
+            backdrop-filter: blur(18px) saturate(160%);
+            -webkit-backdrop-filter: blur(18px) saturate(160%);
+            border-bottom: 1px solid var(--cp-border);
+            padding: .9rem 0;
+            transition: background .3s;
         }
-
+        .navbar.scrolled { background: rgba(10,10,15,.95) !important; }
         .navbar-brand {
-            font-weight: bold;
-            font-size: 1.5rem;
-            color: var(--primary-color) !important;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            font-weight: 900; font-size: 1.55rem;
+            background: linear-gradient(135deg, var(--cp-red), var(--cp-gold));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            letter-spacing: 1.5px; text-transform: uppercase;
         }
-
         .nav-link {
-            color: #e0e0e0 !important;
-            margin-left: 15px;
-            transition: color 0.3s ease;
+            color: var(--cp-muted) !important; font-weight: 500;
+            position: relative; transition: color .3s;
         }
-
-        .nav-link:hover {
-            color: var(--primary-color) !important;
+        .nav-link::after {
+            content:''; position:absolute; bottom:-4px; left:50%; width:0;
+            height:2px; background:var(--cp-red); transition:all .3s; transform:translateX(-50%);
         }
+        .nav-link:hover { color:#fff !important; }
+        .nav-link:hover::after { width:60%; }
 
-        /* Hero Section */
-        .hero-section {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%, #1a1a1a 100%);
-            padding: 60px 0;
-            text-align: center;
-            border-bottom: 2px solid var(--primary-color);
-            min-height: 400px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
+        .nav-user{display:flex;align-items:center;gap:.8rem;margin-left:1rem}
+        .user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--cp-red),var(--cp-gold));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;color:#fff;flex-shrink:0}
+        .user-name{color:var(--cp-text);font-weight:600;font-size:.88rem;white-space:nowrap}
+        .btn-nav-auth{border-radius:8px;padding:.4rem 1rem;font-weight:600;font-size:.82rem;transition:all .2s;text-decoration:none}
+        .btn-nav-login{background:transparent;border:1px solid var(--cp-border);color:var(--cp-text)}
+        .btn-nav-login:hover{border-color:var(--cp-red);color:#fff}
+        .btn-nav-register{background:var(--cp-red);border:1px solid var(--cp-red);color:#fff}
+        .btn-nav-register:hover{background:var(--cp-red-dark);border-color:var(--cp-red-dark);color:#fff}
+        .btn-nav-logout{background:var(--cp-surface);border:1px solid var(--cp-border);color:var(--cp-muted);font-size:.78rem;padding:.35rem .9rem;border-radius:8px;text-decoration:none;transition:all .2s}
+        .btn-nav-logout:hover{border-color:var(--cp-red);color:#fff}
+
+        .hero {
+            position: relative; min-height: 520px;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; overflow: hidden;
+            background: radial-gradient(ellipse at 50% 0%, rgba(229,9,20,.12) 0%, transparent 60%),
+                        var(--cp-dark);
         }
-
-        .hero-section::before {
-            content: '🎬';
-            position: absolute;
-            font-size: 150px;
-            opacity: 0.1;
-            top: -20px;
-            right: -20px;
-            transform: rotate(-30deg);
+        #heroCanvas {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
         }
-
+        .hero-content { position: relative; z-index: 1; max-width: 700px; padding: 2rem 1rem; }
         .hero-content h1 {
-            font-size: 3.5rem;
-            font-weight: 900;
-            color: var(--primary-color);
-            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
-            margin-bottom: 20px;
-            animation: fadeInDown 0.8s ease;
+            font-size: 3.6rem; font-weight: 900;
+            background: linear-gradient(135deg, #fff 40%, var(--cp-red));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            line-height: 1.15; margin-bottom: 1rem;
+        }
+        .hero-content h1 .cursor {
+            display: inline-block; width: 3px; height: 1em;
+            background: var(--cp-red); margin-left: 4px;
+            animation: blink .7s infinite;
+            vertical-align: text-bottom;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        .hero-content p { font-size: 1.2rem; color: var(--cp-muted); margin-bottom: 2rem; }
+        .btn-hero {
+            background: linear-gradient(135deg, var(--cp-red), var(--cp-red-dark));
+            color: #fff; border: none; font-weight: 700; font-size: 1.05rem;
+            padding: .85rem 2.6rem; border-radius: 50px;
+            box-shadow: 0 4px 24px rgba(229,9,20,.35);
+            transition: transform .25s, box-shadow .25s;
+        }
+        .btn-hero:hover {
+            transform: translateY(-3px) scale(1.04);
+            box-shadow: 0 8px 32px rgba(229,9,20,.5);
+            color: #fff;
         }
 
-        .hero-content p {
-            font-size: 1.3rem;
-            color: #b0b0b0;
-            margin-bottom: 30px;
-            animation: fadeInUp 0.8s ease;
+        .section-title {
+            font-size: 2.2rem; font-weight: 700; text-align: center;
+            margin-bottom: .6rem; color: #fff;
         }
+        .section-subtitle { text-align:center; color:var(--cp-muted); margin-bottom:2.5rem; }
 
-        /* Movie Cards */
+        .filter-bar {
+            display: flex; flex-wrap: wrap; align-items: center;
+            justify-content: center; gap: .6rem; margin-bottom: 2.5rem;
+        }
+        .filter-pill {
+            background: var(--cp-surface); color: var(--cp-muted);
+            border: 1px solid var(--cp-border); border-radius: 50px;
+            padding: .45rem 1.4rem; font-size: .88rem; font-weight: 600;
+            cursor: pointer; transition: all .25s; user-select: none;
+        }
+        .filter-pill:hover, .filter-pill.active {
+            background: var(--cp-red); color: #fff; border-color: var(--cp-red);
+            box-shadow: 0 2px 16px rgba(229,9,20,.3);
+        }
+        .search-box {
+            background: var(--cp-surface); border: 1px solid var(--cp-border);
+            border-radius: 50px; color: var(--cp-text); padding: .55rem 1.4rem;
+            font-size: .92rem; width: 260px; transition: border-color .3s;
+        }
+        .search-box::placeholder { color: var(--cp-muted); }
+        .search-box:focus { border-color: var(--cp-red); outline: none; box-shadow: 0 0 0 3px rgba(229,9,20,.15); }
+
         .movie-card {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            border: 2px solid #404040;
-            border-radius: 12px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            height: 100%;
+            background: var(--cp-card);
+            border: 1px solid var(--cp-border);
+            border-radius: 16px; overflow: hidden;
+            transition: transform .35s cubic-bezier(.25,.8,.25,1), box-shadow .35s;
+            height: 100%; display: flex; flex-direction: column;
+            transform-style: preserve-3d; perspective: 800px;
         }
-
         .movie-card:hover {
-            transform: translateY(-10px);
-            border-color: var(--primary-color);
-            box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
+            box-shadow: 0 12px 40px rgba(229,9,20,.2), 0 0 0 1px rgba(229,9,20,.25);
         }
-
-        .movie-card img {
-            width: 100%;
-            height: 300px;
-            object-fit: cover;
-            border-bottom: 2px solid var(--primary-color);
+        .movie-card .poster-wrap {
+            position: relative; overflow: hidden; height: 340px;
         }
-
-        .card-body {
-            padding: 20px;
+        .movie-card .poster-wrap img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform .5s;
         }
-
-        .movie-title {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-            min-height: 50px;
+        .movie-card:hover .poster-wrap img { transform: scale(1.08); }
+        .poster-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, var(--cp-card) 0%, transparent 50%);
+            pointer-events: none;
         }
-
-        .movie-meta {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            font-size: 0.9rem;
-            color: #b0b0b0;
+        .card-rating {
+            position: absolute; top: 14px; right: 14px;
+            background: rgba(0,0,0,.65); backdrop-filter: blur(6px);
+            border-radius: 50px; padding: .3rem .75rem;
+            font-size: .8rem; font-weight: 700; color: var(--cp-gold);
+            display: flex; align-items: center; gap: .3rem;
         }
-
+        .card-body-custom { padding: 1.2rem 1.3rem 1.5rem; flex: 1; display: flex; flex-direction: column; }
+        .movie-title { font-family:'Outfit',sans-serif; font-weight:700; font-size:1.15rem; color:#fff; margin-bottom:.55rem; }
+        .movie-meta-info { display:flex; gap:1rem; color:var(--cp-muted); font-size:.82rem; margin-bottom:1rem; }
+        .movie-meta-info i { color: var(--cp-red); }
         .btn-book {
-            background-color: var(--primary-color);
-            border: none;
-            color: white;
-            font-weight: bold;
-            padding: 10px 20px;
-            transition: all 0.3s ease;
-            width: 100%;
+            margin-top: auto;
+            background: linear-gradient(135deg, var(--cp-red), var(--cp-red-dark));
+            color: #fff; border: none; border-radius: 10px;
+            padding: .7rem 1.2rem; font-weight: 700; font-size: .92rem;
+            display: flex; align-items: center; justify-content: center; gap: .5rem;
+            transition: all .25s; position: relative; overflow: hidden;
         }
-
-        .btn-book:hover {
-            background-color: #c40812;
-            transform: scale(1.02);
+        .btn-book::before {
+            content:''; position:absolute; inset:0;
+            background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,.12) 50%, transparent 70%);
+            transform: translateX(-100%); transition: transform .5s;
         }
+        .btn-book:hover::before { transform: translateX(100%); }
+        .btn-book:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(229,9,20,.4); color:#fff; }
 
-        /* Footer */
+        .reveal-card {
+            opacity: 0; transform: translateY(50px);
+            transition: opacity .65s cubic-bezier(.25,.8,.25,1), transform .65s cubic-bezier(.25,.8,.25,1);
+        }
+        .reveal-card.visible { opacity: 1; transform: translateY(0); }
+
         footer {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            border-top: 2px solid var(--primary-color);
-            padding: 30px 0;
-            margin-top: 50px;
-            text-align: center;
-            color: #b0b0b0;
+            background: var(--cp-card); border-top: 1px solid var(--cp-border);
+            padding: 2.5rem 0; text-align: center; color: var(--cp-muted);
+            margin-top: 4rem; font-size: .9rem;
+        }
+        footer .brand-footer {
+            font-family:'Outfit',sans-serif; font-weight:700; font-size:1.1rem;
+            background: linear-gradient(135deg, var(--cp-red), var(--cp-gold));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
         }
 
-        /* Animations */
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsive adjustments */
         @media (max-width: 768px) {
-            .hero-content h1 {
-                font-size: 2rem;
-            }
-
-            .movie-card {
-                margin-bottom: 20px;
-            }
+            .hero-content h1 { font-size: 2.2rem; }
+            .search-box { width: 100%; }
+            .movie-card .poster-wrap { height: 260px; }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
         <div class="container">
-            <a class="navbar-brand" href="/">🎬 CinemaPro</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-film"></i> CinemaPro
+            </a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#movies">Movies</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin">Admin</a>
-                    </li>
+                <ul class="navbar-nav ms-auto gap-1">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#movies">Movies</a></li>
+                    <% if (user && user.role === 'admin') { %>
+                        <li class="nav-item"><a class="nav-link" href="/admin">Admin</a></li>
+                    <% } %>
                 </ul>
+                <div class="nav-user">
+                    <% if (user) { %>
+                        <div class="user-avatar"><%= user.name.charAt(0).toUpperCase() %></div>
+                        <span class="user-name d-none d-lg-inline"><%= user.name %></span>
+                        <a href="/logout" class="btn-nav-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                    <% } else { %>
+                        <a href="/login" class="btn-nav-auth btn-nav-login">Login</a>
+                        <a href="/register" class="btn-nav-auth btn-nav-register">Register</a>
+                    <% } %>
+                </div>
             </div>
         </div>
     </nav>
 
-    <section class="hero-section">
+    <section class="hero" id="hero">
+        <canvas id="heroCanvas"></canvas>
         <div class="hero-content">
-            <h1>Welcome to CinemaPro</h1>
-            <p>Book your favorite movies and enjoy the ultimate cinema experience!</p>
-            <a href="#movies" class="btn btn-lg" style="background-color: var(--primary-color); color: white; font-weight: bold;">
-                Explore Movies
+            <h1 id="heroTitle"></h1>
+            <p>Discover blockbusters, reserve premium seats & enjoy the ultimate cinema experience — all in one place.</p>
+            <a href="#movies" class="btn btn-hero">
+                <i class="bi bi-collection-play-fill me-2"></i>Explore Movies
             </a>
         </div>
     </section>
 
-    <div class="container py-5" id="movies">
-        <h2 class="text-center mb-5" style="color: var(--primary-color); font-size: 2.5rem; font-weight: bold;">
-            🎥 Now Showing
-        </h2>
-        
-        <div class="row">
-            <% movies.forEach(movie => { %>
-                <div class="col-md-6 col-lg-3 mb-4">
-                    <div class="movie-card">
-                        <img src="<%= movie.image %>" alt="<%= movie.title %>" class="card-img-top">
-                        <div class="card-body">
+    <section class="container py-5" id="movies">
+        <h2 class="section-title">Now Showing</h2>
+        <p class="section-subtitle">The latest blockbusters, handpicked for your entertainment</p>
+
+        <div class="filter-bar">
+            <span class="filter-pill active" data-genre="all">All</span>
+            <% genres.forEach(g => { %>
+                <span class="filter-pill" data-genre="<%= g %>"><%= g %></span>
+            <% }); %>
+            <input type="text" class="search-box" id="searchInput" placeholder="Search movies…">
+        </div>
+
+        <div class="row g-4" id="movieGrid">
+            <% movies.forEach((movie, i) => { %>
+                <div class="col-sm-6 col-lg-3 reveal-card movie-col" data-genre="<%= movie.genre %>" data-title="<%= movie.title.toLowerCase() %>" style="transition-delay: <%= i * 0.1 %>s">
+                    <div class="movie-card" id="card-<%= movie.id %>">
+                        <div class="poster-wrap">
+                            <img src="<%= movie.image %>" alt="<%= movie.title %>" loading="lazy">
+                            <div class="poster-overlay"></div>
+                            <span class="card-rating"><i class="bi bi-star-fill"></i> <%= movie.rating %></span>
+                        </div>
+                        <div class="card-body-custom">
                             <h5 class="movie-title"><%= movie.title %></h5>
-                            <div class="movie-meta">
-                                <span>🎭 <%= movie.genre %></span>
-                                <span>⭐ <%= movie.rating %></span>
+                            <div class="movie-meta-info">
+                                <span><i class="bi bi-tag-fill"></i> <%= movie.genre %></span>
+                                <span><i class="bi bi-clock-fill"></i> <%= movie.duration %></span>
                             </div>
-                            <div class="movie-meta mb-3">
-                                <span>⏱️ <%= movie.duration %></span>
-                            </div>
-                            <button class="btn btn-book" onclick="window.location.href='/movie/<%= movie.id %>'">
-                                <i class="fas fa-ticket-alt"></i> Book Now
-                            </button>
+                            <a href="/movie/<%= movie.id %>" class="btn btn-book">
+                                <i class="bi bi-ticket-perforated-fill"></i> Book Now
+                            </a>
                         </div>
                     </div>
                 </div>
             <% }); %>
         </div>
-    </div>
+
+        <div class="text-center py-5 d-none" id="noResults">
+            <i class="bi bi-search" style="font-size:2.5rem;color:var(--cp-muted)"></i>
+            <p class="mt-3" style="color:var(--cp-muted);font-size:1.1rem;">No movies match your search.</p>
+        </div>
+    </section>
 
     <footer>
         <div class="container">
-            <p>&copy; 2026 CinemaPro. All Rights Reserved. | Enjoy Your Movie Experience! 🍿</p>
+            <span class="brand-footer"><i class="bi bi-film"></i> CinemaPro</span>
+            <p class="mt-2 mb-0">&copy; 2026 CinemaPro. All Rights Reserved. | Enjoy Your Movie Experience! 🍿</p>
         </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.28/dist/sweetalert2.all.min.js"></script>
+
+    <script>
+        const nav = document.getElementById('mainNav');
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('scrolled', window.scrollY > 60);
+        });
+
+        (function() {
+            const canvas = document.getElementById('heroCanvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            const emojis = ['🎬','🎥','🍿','⭐','🎞️','🎭'];
+
+            function resize() {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            class Particle {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.size = 14 + Math.random() * 18;
+                    this.speedX = (Math.random() - .5) * .4;
+                    this.speedY = -(Math.random() * .35 + .1);
+                    this.emoji = emojis[Math.floor(Math.random() * emojis.length)];
+                    this.opacity = .08 + Math.random() * .14;
+                    this.rotation = Math.random() * 360;
+                    this.rotSpeed = (Math.random() - .5) * .5;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.rotation += this.rotSpeed;
+                    if (this.y < -40 || this.x < -40 || this.x > canvas.width + 40) this.reset();
+                    if (this.y < -40) { this.y = canvas.height + 30; this.x = Math.random() * canvas.width; }
+                }
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.opacity;
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation * Math.PI / 180);
+                    ctx.font = this.size + 'px serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(this.emoji, 0, 0);
+                    ctx.restore();
+                }
+            }
+
+            for (let i = 0; i < 30; i++) particles.push(new Particle());
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        })();
+
+        (function() {
+            const text = "Welcome to CinemaPro";
+            const el = document.getElementById('heroTitle');
+            let i = 0;
+            function type() {
+                if (i <= text.length) {
+                    el.innerHTML = text.substring(0, i) + '<span class="cursor"></span>';
+                    i++;
+                    setTimeout(type, 70);
+                } else {
+                    // keep cursor blinking
+                    el.innerHTML = text + '<span class="cursor"></span>';
+                }
+            }
+            type();
+        })();
+
+        (function() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.08 });
+            document.querySelectorAll('.reveal-card').forEach(c => observer.observe(c));
+        })();
+
+        document.querySelectorAll('.movie-card').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const rotY = ((x / rect.width) - .5) * 10;
+                const rotX = -((y / rect.height) - .5) * 10;
+                card.style.transform = `perspective(800px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(1.03)`;
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = '';
+            });
+        });
+
+        (function() {
+            const pills = document.querySelectorAll('.filter-pill');
+            const cols = document.querySelectorAll('.movie-col');
+            const noResults = document.getElementById('noResults');
+
+            pills.forEach(pill => {
+                pill.addEventListener('click', () => {
+                    pills.forEach(p => p.classList.remove('active'));
+                    pill.classList.add('active');
+                    filterMovies();
+                });
+            });
+
+            document.getElementById('searchInput').addEventListener('input', filterMovies);
+
+            function filterMovies() {
+                const genre = document.querySelector('.filter-pill.active').dataset.genre;
+                const search = document.getElementById('searchInput').value.toLowerCase().trim();
+                let visible = 0;
+                cols.forEach(col => {
+                    const matchGenre = genre === 'all' || col.dataset.genre === genre;
+                    const matchSearch = !search || col.dataset.title.includes(search);
+                    if (matchGenre && matchSearch) {
+                        col.style.display = '';
+                        col.classList.add('visible');
+                        visible++;
+                    } else {
+                        col.style.display = 'none';
+                    }
+                });
+                noResults.classList.toggle('d-none', visible > 0);
+            }
+        })();
+    </script>
 </body>
 </html>

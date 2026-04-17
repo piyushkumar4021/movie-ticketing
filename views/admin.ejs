@@ -3,420 +3,304 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - CinemaPro</title>
-    
+    <meta name="description" content="CinemaPro Admin Dashboard — Manage movies, view bookings, and monitor revenue.">
+    <title>Admin Dashboard — CinemaPro</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.28/dist/sweetalert2.min.css" rel="stylesheet">
-    
+
     <style>
         :root {
-            --primary-color: #e50914;
-            --secondary-color: #221f1f;
-            --accent-color: #f39c12;
+            --cp-red:#e50914;--cp-red-dark:#b0060f;--cp-gold:#f6c700;
+            --cp-dark:#0a0a0f;--cp-card:#14141f;--cp-surface:#1c1c2b;
+            --cp-border:rgba(255,255,255,.06);--cp-text:#e2e2e8;--cp-muted:#8b8b9e;
+            --cp-green:#28a745;--cp-blue:#3b82f6;
         }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:var(--cp-dark);color:var(--cp-text);font-family:'Inter',sans-serif;overflow-x:hidden}
+        h1,h2,h3,h4,h5,h6,.navbar-brand{font-family:'Outfit',sans-serif}
 
-        * {
-            scroll-behavior: smooth;
+        .navbar{background:rgba(10,10,15,.75)!important;backdrop-filter:blur(18px);border-bottom:1px solid var(--cp-border);padding:.9rem 0}
+        .navbar-brand{font-weight:900;font-size:1.55rem;background:linear-gradient(135deg,var(--cp-red),var(--cp-gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1.5px;text-transform:uppercase}
+        .nav-link{color:var(--cp-muted)!important;font-weight:500;transition:color .3s}
+        .nav-link:hover,.nav-link.active{color:#fff!important}
+
+        .admin-hero{
+            background:radial-gradient(ellipse at 30% 0%,rgba(229,9,20,.08),transparent 50%),var(--cp-dark);
+            padding:100px 0 2rem;border-bottom:1px solid var(--cp-border);margin-bottom:2rem;
         }
+        .admin-hero h1{font-weight:900;font-size:2.2rem;color:#fff}
+        .admin-hero p{color:var(--cp-muted);font-size:1rem}
 
-        body {
-            background-color: #0f0f0f;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        .stat-card{
+            background:var(--cp-card);border:1px solid var(--cp-border);border-radius:16px;
+            padding:1.8rem;display:flex;gap:1.2rem;align-items:center;
+            transition:all .3s;position:relative;overflow:hidden;
         }
-
-        /* Navbar Styling */
-        .navbar {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            border-bottom: 3px solid var(--primary-color);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        .stat-card::before{
+            content:'';position:absolute;inset:0;
+            background:linear-gradient(135deg,transparent 60%,rgba(229,9,20,.04));
+            pointer-events:none;
         }
-
-        .navbar-brand {
-            font-weight: bold;
-            font-size: 1.5rem;
-            color: var(--primary-color) !important;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+        .stat-card:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+        .stat-icon{
+            width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+            font-size:1.5rem;flex-shrink:0;
         }
+        .stat-icon.movies{background:rgba(229,9,20,.15);color:var(--cp-red)}
+        .stat-icon.bookings{background:rgba(59,130,246,.15);color:var(--cp-blue)}
+        .stat-icon.revenue{background:rgba(246,199,0,.15);color:var(--cp-gold)}
+        .stat-label{font-size:.78rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--cp-muted);margin-bottom:.2rem}
+        .stat-value{font-family:'Outfit',sans-serif;font-size:2rem;font-weight:900;color:#fff}
 
-        .nav-link {
-            color: #e0e0e0 !important;
-            margin-left: 15px;
-            transition: color 0.3s ease;
+        .nav-tabs{border-bottom:2px solid var(--cp-border);margin-bottom:1.5rem}
+        .nav-tabs .nav-link{
+            color:var(--cp-muted);border:none;border-bottom:3px solid transparent;
+            font-weight:600;padding:.8rem 1.5rem;transition:all .3s;
+            background:transparent;
         }
+        .nav-tabs .nav-link:hover{color:var(--cp-red);border-bottom-color:var(--cp-red)}
+        .nav-tabs .nav-link.active{color:var(--cp-red);border-bottom:3px solid var(--cp-red);background:transparent}
 
-        .nav-link:hover {
-            color: var(--primary-color) !important;
+        .table{color:var(--cp-text)}
+        .table thead{background:var(--cp-surface)}
+        .table thead th{color:var(--cp-red);font-weight:700;text-transform:uppercase;font-size:.78rem;letter-spacing:1px;border:none;padding:.9rem 1rem}
+        .table tbody tr{border-bottom:1px solid var(--cp-border);transition:all .3s}
+        .table tbody tr:hover{background:rgba(229,9,20,.04)}
+        .table tbody td{vertical-align:middle;border-color:var(--cp-border);padding:.85rem 1rem}
+
+        .table-search{
+            background:var(--cp-surface);border:1px solid var(--cp-border);border-radius:10px;
+            color:var(--cp-text);padding:.6rem 1.2rem;font-size:.88rem;width:280px;transition:border-color .3s;
         }
+        .table-search::placeholder{color:var(--cp-muted)}
+        .table-search:focus{border-color:var(--cp-red);outline:none;box-shadow:0 0 0 3px rgba(229,9,20,.12)}
 
-        /* Admin Header */
-        .admin-header {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            padding: 40px 0;
-            border-bottom: 2px solid var(--primary-color);
-            margin-bottom: 40px;
+        .btn-add{
+            background:linear-gradient(135deg,var(--cp-red),var(--cp-red-dark));color:#fff;border:none;
+            border-radius:10px;padding:.65rem 1.5rem;font-weight:700;transition:all .25s;
         }
-
-        .admin-header h1 {
-            color: var(--primary-color);
-            font-weight: bold;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+        .btn-add:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(229,9,20,.3);color:#fff}
+        .btn-del{
+            background:rgba(211,47,47,.12);color:#ef4444;border:1px solid rgba(211,47,47,.2);
+            border-radius:8px;padding:.4rem .9rem;font-weight:600;font-size:.82rem;transition:all .2s;
         }
+        .btn-del:hover{background:#ef4444;color:#fff;border-color:#ef4444}
+        .badge-id{background:var(--cp-red);font-size:.75rem;padding:.35rem .65rem;border-radius:6px}
+        .badge-amount{color:var(--cp-gold);font-weight:700}
+        .empty-state{background:var(--cp-surface);border:1px solid var(--cp-border);border-radius:12px;padding:2.5rem;text-align:center;color:var(--cp-muted)}
 
-        .admin-header p {
-            color: #b0b0b0;
-        }
+        @keyframes fadeOut{to{opacity:0;transform:translateX(30px);height:0;padding:0;overflow:hidden}}
 
-        /* Tabs */
-        .nav-tabs {
-            border-bottom: 2px solid var(--primary-color);
-        }
+        .modal-content{background:var(--cp-card);border:1px solid var(--cp-border);border-radius:16px}
+        .modal-header{border-bottom:1px solid var(--cp-border);background:var(--cp-surface);border-radius:16px 16px 0 0}
+        .modal-title{color:var(--cp-red);font-weight:700}
+        .modal-footer{border-top:1px solid var(--cp-border)}
+        .btn-close{filter:invert(1)}
+        .modal .form-control{background:var(--cp-surface);border:1px solid var(--cp-border);color:var(--cp-text);border-radius:10px}
+        .modal .form-control:focus{border-color:var(--cp-red);box-shadow:0 0 0 3px rgba(229,9,20,.12);background:var(--cp-surface);color:var(--cp-text)}
+        .modal .form-label{color:var(--cp-muted);font-weight:600;font-size:.85rem}
+        .btn-submit-movie{background:var(--cp-red);color:#fff;border:none;border-radius:10px;font-weight:700;padding:.6rem 1.8rem;transition:all .2s}
+        .btn-submit-movie:hover{background:var(--cp-red-dark);color:#fff}
+        .btn-modal-cancel{background:var(--cp-surface);color:var(--cp-muted);border:1px solid var(--cp-border);border-radius:10px;font-weight:600;padding:.6rem 1.5rem}
+        .btn-modal-cancel:hover{background:#2a2a3a;color:#fff}
 
-        .nav-tabs .nav-link {
-            color: #b0b0b0;
-            border: none;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s ease;
-        }
+        .nav-user{display:flex;align-items:center;gap:.8rem;margin-left:1rem}
+        .user-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--cp-red),var(--cp-gold));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;color:#fff;flex-shrink:0}
+        .user-name{color:var(--cp-text);font-weight:600;font-size:.88rem;white-space:nowrap}
+        .btn-nav-logout{background:var(--cp-surface);border:1px solid var(--cp-border);color:var(--cp-muted);font-size:.78rem;padding:.35rem .9rem;border-radius:8px;text-decoration:none;transition:all .2s}
+        .btn-nav-logout:hover{border-color:var(--cp-red);color:#fff}
 
-        .nav-tabs .nav-link:hover {
-            color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
-        }
+        footer{background:var(--cp-card);border-top:1px solid var(--cp-border);padding:2rem 0;text-align:center;color:var(--cp-muted);margin-top:3rem;font-size:.9rem}
 
-        .nav-tabs .nav-link.active {
-            background-color: transparent;
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--primary-color);
-        }
-
-        /* Table Styles */
-        .table {
-            color: #e0e0e0;
-        }
-
-        .table thead {
-            background-color: #1a1a1a;
-            border-bottom: 2px solid var(--primary-color);
-        }
-
-        .table thead th {
-            color: var(--primary-color);
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: none;
-        }
-
-        .table tbody tr {
-            border-bottom: 1px solid #404040;
-            transition: all 0.3s ease;
-        }
-
-        .table tbody tr:hover {
-            background-color: #2d2d2d;
-        }
-
-        .table tbody td {
-            vertical-align: middle;
-            border-color: #404040;
-        }
-
-        /* Forms */
-        .form-control, .form-select {
-            background-color: #2d2d2d;
-            border: 1px solid #404040;
-            color: #e0e0e0;
-        }
-
-        .form-control:focus, .form-select:focus {
-            background-color: #2d2d2d;
-            border-color: var(--primary-color);
-            color: #e0e0e0;
-            box-shadow: 0 0 0 0.2rem rgba(229, 9, 20, 0.25);
-        }
-
-        .form-label {
-            color: #e0e0e0;
-            font-weight: 500;
-            margin-bottom: 8px;
-        }
-
-        /* Modal */
-        .modal-content {
-            background-color: #1a1a1a;
-            border: 2px solid #404040;
-        }
-
-        .modal-header {
-            border-bottom: 2px solid var(--primary-color);
-            background-color: #2d2d2d;
-        }
-
-        .modal-title {
-            color: var(--primary-color);
-            font-weight: bold;
-        }
-
-        .btn-close {
-            filter: invert(1);
-        }
-
-        /* Buttons */
-        .btn-primary {
-            background-color: var(--primary-color);
-            border: none;
-            font-weight: bold;
-        }
-
-        .btn-primary:hover {
-            background-color: #c40812;
-        }
-
-        .btn-danger {
-            background-color: #d32f2f;
-            border: none;
-        }
-
-        .btn-danger:hover {
-            background-color: #b71c1c;
-        }
-
-        .btn-warning {
-            background-color: var(--accent-color);
-            border: none;
-            color: #000;
-        }
-
-        .btn-warning:hover {
-            background-color: #e68900;
-        }
-
-        /* Stats Card */
-        .stat-card {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            border: 2px solid #404040;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .stat-card h3 {
-            color: #b0b0b0;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-
-        .stat-card .stat-value {
-            color: var(--primary-color);
-            font-size: 2.5rem;
-            font-weight: bold;
-        }
-
-        /* Footer */
-        footer {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            border-top: 2px solid var(--primary-color);
-            padding: 30px 0;
-            margin-top: 50px;
-            text-align: center;
-            color: #b0b0b0;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .admin-header {
-                padding: 20px 0;
-            }
-
-            .admin-header h1 {
-                font-size: 1.8rem;
-            }
+        @media(max-width:768px){
+            .admin-hero{padding:90px 0 1.5rem}
+            .admin-hero h1{font-size:1.6rem}
+            .table-search{width:100%}
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="/">🎬 CinemaPro</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <a class="navbar-brand" href="/"><i class="bi bi-film"></i> CinemaPro</a>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/#movies">Movies</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="/admin">Admin</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/#movies">Movies</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/admin">Admin</a></li>
                 </ul>
+                <div class="nav-user">
+                    <% if (user) { %>
+                        <div class="user-avatar"><%= user.name.charAt(0).toUpperCase() %></div>
+                        <span class="user-name d-none d-lg-inline"><%= user.name %></span>
+                        <a href="/logout" class="btn-nav-logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                    <% } %>
+                </div>
             </div>
         </div>
     </nav>
 
-    <div class="admin-header">
+    <div class="admin-hero">
         <div class="container">
-            <h1>🎬 Admin Dashboard</h1>
-            <p>Manage movies, view bookings, and control your cinema operations</p>
+            <h1><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h1>
+            <p>Manage movies, monitor bookings, and track revenue</p>
         </div>
     </div>
 
     <div class="container mb-5">
-        <!-- Stats Row -->
-        <div class="row mb-4">
-            <div class="col-md-6">
+        <!-- Stats -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
                 <div class="stat-card">
-                    <h3>📽️ Total Movies</h3>
-                    <div class="stat-value"><%= movies.length %></div>
+                    <div class="stat-icon movies"><i class="bi bi-camera-reels-fill"></i></div>
+                    <div>
+                        <div class="stat-label">Total Movies</div>
+                        <div class="stat-value" data-count="<%= movies.length %>">0</div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="stat-card">
-                    <h3>🎟️ Total Bookings</h3>
-                    <div class="stat-value"><%= bookings.length %></div>
+                    <div class="stat-icon bookings"><i class="bi bi-ticket-perforated-fill"></i></div>
+                    <div>
+                        <div class="stat-label">Total Bookings</div>
+                        <div class="stat-value" data-count="<%= bookings.length %>">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon revenue"><i class="bi bi-currency-dollar"></i></div>
+                    <div>
+                        <div class="stat-label">Total Revenue</div>
+                        <div class="stat-value" data-count="<%= Math.round(totalRevenue) %>" data-prefix="$">$0</div>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Tabs -->
         <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="movies-tab" data-bs-toggle="tab" data-bs-target="#movies" type="button" role="tab">
-                    📽️ Movies Management
+                <button class="nav-link active" id="movies-tab" data-bs-toggle="tab" data-bs-target="#moviesTab" type="button" role="tab">
+                    <i class="bi bi-camera-reels-fill me-1"></i> Movies
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="bookings-tab" data-bs-toggle="tab" data-bs-target="#bookings" type="button" role="tab">
-                    🎟️ View Bookings
+                <button class="nav-link" id="bookings-tab" data-bs-toggle="tab" data-bs-target="#bookingsTab" type="button" role="tab">
+                    <i class="bi bi-ticket-perforated-fill me-1"></i> Bookings
                 </button>
             </li>
         </ul>
 
-        <div class="tab-content mt-4">
-            <div class="tab-pane fade show active" id="movies" role="tabpanel">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 style="color: var(--primary-color); font-weight: bold;">All Movies</h2>
-                    <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addMovieModal">
-                        <i class="fas fa-plus"></i> Add New Movie
+        <div class="tab-content">
+            <!-- Movies Tab -->
+            <div class="tab-pane fade show active" id="moviesTab" role="tabpanel">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 mt-2">
+                    <input type="text" class="table-search" id="movieSearch" placeholder="Search movies…">
+                    <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#addMovieModal">
+                        <i class="bi bi-plus-lg me-1"></i> Add Movie
                     </button>
                 </div>
-
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table align-middle" id="moviesTable">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Title</th>
-                                <th>Genre</th>
-                                <th>Duration</th>
-                                <th>Rating</th>
-                                <th>Actions</th>
+                                <th>ID</th><th>Title</th><th>Genre</th><th>Duration</th><th>Rating</th><th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% movies.forEach(movie => { %>
-                                <tr>
-                                    <td><span class="badge" style="background-color: var(--primary-color);"><%= movie.id %></span></td>
-                                    <td><strong><%= movie.title %></strong></td>
-                                    <td><%= movie.genre %></td>
-                                    <td><%= movie.duration %></td>
-                                    <td><%= movie.rating %></td>
-                                    <td>
-                                        <button class="btn btn-danger btn-sm" onclick="deleteMovie(<%= movie.id %>, '<%= movie.title %>')">
-                                            <i class="fas fa-trash"></i> Delete
-                                        </button>
-                                    </td>
-                                </tr>
+                            <tr data-search="<%= movie.title.toLowerCase() %> <%= movie.genre.toLowerCase() %>">
+                                <td><span class="badge badge-id"><%= movie.id %></span></td>
+                                <td><strong><%= movie.title %></strong></td>
+                                <td><%= movie.genre %></td>
+                                <td><%= movie.duration %></td>
+                                <td><i class="bi bi-star-fill text-warning me-1"></i><%= movie.rating %></td>
+                                <td>
+                                    <button class="btn btn-del" onclick="deleteMovie(<%= movie.id %>, '<%= movie.title %>', this)">
+                                        <i class="bi bi-trash3-fill me-1"></i>Delete
+                                    </button>
+                                </td>
+                            </tr>
                             <% }); %>
                         </tbody>
                     </table>
-
-                    <% if (movies.length === 0) { %>
-                        <div class="alert alert-info text-center" style="background-color: #2d2d2d; border: 2px solid var(--primary-color); color: var(--primary-color);">
-                            <strong>No movies available.</strong> Click "Add New Movie" to add your first movie!
-                        </div>
-                    <% } %>
                 </div>
+                <% if (movies.length === 0) { %>
+                    <div class="empty-state"><i class="bi bi-camera-reels" style="font-size:2rem"></i><p class="mt-2">No movies yet. Add your first movie!</p></div>
+                <% } %>
             </div>
 
-            <div class="tab-pane fade" id="bookings" role="tabpanel">
-                <h2 style="color: var(--primary-color); font-weight: bold; margin-bottom: 30px;">Booking Records</h2>
-
+            <!-- Bookings Tab -->
+            <div class="tab-pane fade" id="bookingsTab" role="tabpanel">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 mt-2">
+                    <input type="text" class="table-search" id="bookingSearch" placeholder="Search bookings…">
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table align-middle" id="bookingsTable">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Movie</th>
-                                <th>Seats</th>
-                                <th>Total</th>
-                                <th>Date</th>
+                                <th>ID</th><th>Name</th><th>Email</th><th>Movie</th><th>Seats</th><th>Total</th><th>Date</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% bookings.forEach(booking => { %>
-                                <tr>
-                                    <td><span class="badge" style="background-color: var(--primary-color);">BOOK-<%= String(booking.id).padStart(5, '0') %></span></td>
-                                    <td><strong><%= booking.name %></strong></td>
-                                    <td><%= booking.email %></td>
-                                    <td><%= booking.movieTitle %></td>
-                                    <td><strong><%= booking.seats %></strong></td>
-                                    <td style="color: var(--primary-color); font-weight: bold;">$<%= (booking.seats * 12 * 1.1).toFixed(2) %></td>
-                                    <td><%= booking.bookingDate %></td>
-                                </tr>
+                            <tr data-search="<%= booking.name.toLowerCase() %> <%= booking.email.toLowerCase() %> <%= booking.movieTitle.toLowerCase() %>">
+                                <td><span class="badge badge-id">BOOK-<%= String(booking.id).padStart(5, '0') %></span></td>
+                                <td><strong><%= booking.name %></strong></td>
+                                <td><%= booking.email %></td>
+                                <td><%= booking.movieTitle %></td>
+                                <td><strong><%= booking.seats %></strong></td>
+                                <td class="badge-amount">$<%= (booking.seats * 12 * 1.1).toFixed(2) %></td>
+                                <td><%= booking.bookingDate %></td>
+                            </tr>
                             <% }); %>
                         </tbody>
                     </table>
-
-                    <% if (bookings.length === 0) { %>
-                        <div class="alert alert-info text-center" style="background-color: #2d2d2d; border: 2px solid var(--primary-color); color: var(--primary-color);">
-                            <strong>No bookings yet.</strong> Bookings will appear here once customers start booking tickets.
-                        </div>
-                    <% } %>
                 </div>
+                <% if (bookings.length === 0) { %>
+                    <div class="empty-state"><i class="bi bi-ticket-perforated" style="font-size:2rem"></i><p class="mt-2">No bookings yet. They'll appear here once customers book tickets.</p></div>
+                <% } %>
             </div>
         </div>
     </div>
 
+    <!-- Add Movie Modal -->
     <div class="modal fade" id="addMovieModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title">Add New Movie</h1>
+                    <h5 class="modal-title"><i class="bi bi-plus-circle-fill me-2"></i>Add New Movie</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form id="addMovieForm">
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="movieTitle" class="form-label">Movie Title <span style="color: var(--primary-color);">*</span></label>
-                            <input type="text" class="form-control" id="movieTitle" name="title" placeholder="Enter movie title" required>
+                            <label for="movieTitle" class="form-label">Movie Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="movieTitle" placeholder="Enter movie title" required>
                         </div>
                         <div class="mb-3">
-                            <label for="movieGenre" class="form-label">Genre <span style="color: var(--primary-color);">*</span></label>
-                            <input type="text" class="form-control" id="movieGenre" name="genre" placeholder="e.g., Action, Drama" required>
+                            <label for="movieGenre" class="form-label">Genre <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="movieGenre" placeholder="e.g. Action, Drama" required>
                         </div>
                         <div class="mb-3">
-                            <label for="movieDuration" class="form-label">Duration <span style="color: var(--primary-color);">*</span></label>
-                            <input type="text" class="form-control" id="movieDuration" name="duration" placeholder="e.g., 120 min" required>
+                            <label for="movieDuration" class="form-label">Duration <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="movieDuration" placeholder="e.g. 120 min" required>
                         </div>
                         <div class="mb-3">
-                            <label for="movieRating" class="form-label">IMDB Rating <span style="color: var(--primary-color);">*</span></label>
-                            <input type="text" class="form-control" id="movieRating" name="rating" placeholder="e.g., 8.5/10" required>
+                            <label for="movieRating" class="form-label">IMDB Rating <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="movieRating" placeholder="e.g. 8.5/10" required>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Movie</button>
+                        <button type="button" class="btn btn-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-submit-movie"><i class="bi bi-plus-lg me-1"></i>Add Movie</button>
                     </div>
                 </form>
             </div>
@@ -425,7 +309,7 @@
 
     <footer>
         <div class="container">
-            <p>&copy; 2026 CinemaPro. All Rights Reserved. | Enjoy Your Movie Experience! 🍿</p>
+            <p class="mb-0">&copy; 2026 CinemaPro. All Rights Reserved. | Enjoy Your Movie Experience! 🍿</p>
         </div>
     </footer>
 
@@ -433,124 +317,82 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.28/dist/sweetalert2.all.min.js"></script>
 
     <script>
-        const addMovieForm = document.getElementById('addMovieForm');
+        document.querySelectorAll('.stat-value[data-count]').forEach(el => {
+            const target = parseInt(el.dataset.count);
+            const prefix = el.dataset.prefix || '';
+            const duration = 1200;
+            const start = performance.now();
+            function tick(now) {
+                const elapsed = now - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                el.textContent = prefix + Math.round(target * eased).toLocaleString();
+                if (progress < 1) requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+        });
+
+        function setupSearch(inputId, tableId) {
+            document.getElementById(inputId).addEventListener('input', function() {
+                const q = this.value.toLowerCase().trim();
+                document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+                    const data = row.dataset.search || '';
+                    row.style.display = data.includes(q) ? '' : 'none';
+                });
+            });
+        }
+        setupSearch('movieSearch', 'moviesTable');
+        setupSearch('bookingSearch', 'bookingsTable');
+
         const addMovieModal = new bootstrap.Modal(document.getElementById('addMovieModal'));
-
-        addMovieForm.addEventListener('submit', async function(e) {
+        document.getElementById('addMovieForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
             const title = document.getElementById('movieTitle').value;
             const genre = document.getElementById('movieGenre').value;
             const duration = document.getElementById('movieDuration').value;
             const rating = document.getElementById('movieRating').value;
 
             try {
-                const response = await fetch('/api/movie', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        title: title,
-                        genre: genre,
-                        duration: duration,
-                        rating: rating
-                    })
+                const res = await fetch('/api/movie', {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({title, genre, duration, rating})
                 });
-
-                const data = await response.json();
-
+                const data = await res.json();
                 if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Movie Added!',
-                        text: 'The movie has been added successfully.',
-                        background: '#1a1a1a',
-                        color: '#e0e0e0',
-                        confirmButtonColor: '#e50914',
-                        didClose: () => {
-                            location.reload();
-                        }
-                    });
                     addMovieModal.hide();
+                    Swal.fire({icon:'success',title:'Movie Added!',text:title+' has been added.',background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914',didClose:()=>location.reload()});
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: data.message || 'Failed to add movie.',
-                        background: '#1a1a1a',
-                        color: '#e0e0e0',
-                        confirmButtonColor: '#e50914'
-                    });
+                    Swal.fire({icon:'error',title:'Error',text:data.message,background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914'});
                 }
-            } catch (error) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An unexpected error occurred.',
-                    background: '#1a1a1a',
-                    color: '#e0e0e0',
-                    confirmButtonColor: '#e50914'
-                });
+            } catch(err) {
+                Swal.fire({icon:'error',title:'Error',text:'An unexpected error occurred.',background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914'});
             }
         });
 
-        // Delete Movie Function
-        function deleteMovie(movieId, movieTitle) {
-            Swal.fire({
-                title: 'Delete Movie?',
-                text: `Are you sure you want to delete "${movieTitle}"? This action cannot be undone.`,
-                icon: 'warning',
-                background: '#1a1a1a',
-                color: '#e0e0e0',
-                showCancelButton: true,
-                confirmButtonColor: '#d32f2f',
-                cancelButtonColor: '#404040',
-                confirmButtonText: 'Yes, Delete It!',
-                cancelButtonText: 'Cancel'
-            }).then(async (result) => {
-                if (result.isConfirmed) {
-                    try {
-                        const response = await fetch(`/api/movie/${movieId}`, {
-                            method: 'DELETE'
-                        });
-
-                        const data = await response.json();
-
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Deleted!',
-                                text: 'The movie has been deleted successfully.',
-                                background: '#1a1a1a',
-                                color: '#e0e0e0',
-                                confirmButtonColor: '#e50914',
-                                didClose: () => {
-                                    location.reload();
-                                }
-                            });
-                        } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Error',
-                                text: 'Failed to delete the movie.',
-                                background: '#1a1a1a',
-                                color: '#e0e0e0',
-                                confirmButtonColor: '#e50914'
-                            });
-                        }
-                    } catch (error) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'An unexpected error occurred.',
-                            background: '#1a1a1a',
-                            color: '#e0e0e0',
-                            confirmButtonColor: '#e50914'
-                        });
-                    }
-                }
+        async function deleteMovie(id, title, btn) {
+            const result = await Swal.fire({
+                title:'Delete Movie?',
+                html:'Are you sure you want to delete <strong>"'+title+'"</strong>?',
+                icon:'warning', background:'#14141f', color:'#e2e2e8',
+                showCancelButton:true, confirmButtonColor:'#ef4444', cancelButtonColor:'#333',
+                confirmButtonText:'Yes, Delete', cancelButtonText:'Cancel'
             });
+            if (!result.isConfirmed) return;
+
+            try {
+                const res = await fetch('/api/movie/'+id, {method:'DELETE'});
+                const data = await res.json();
+                if (data.success) {
+                    const row = btn.closest('tr');
+                    row.style.animation = 'fadeOut .5s ease forwards';
+                    setTimeout(() => row.remove(), 500);
+                    Swal.fire({icon:'success',title:'Deleted!',text:title+' removed.',background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914',timer:1500,timerProgressBar:true});
+                } else {
+                    Swal.fire({icon:'error',title:'Error',text:'Failed to delete.',background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914'});
+                }
+            } catch(err) {
+                Swal.fire({icon:'error',title:'Error',text:'An unexpected error occurred.',background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914'});
+            }
         }
     </script>
 </body>

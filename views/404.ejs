@@ -1,84 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Not Found - CinemaPro</title>
-    
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 — Page Not Found | CinemaPro</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Inter:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+
     <style>
-        :root {
-            --primary-color: #e50914;
-            --secondary-color: #221f1f;
-            --accent-color: #f39c12;
-        }
+      :root {
+        --cp-red: #e50914;
+        --cp-red-dark: #b0060f;
+        --cp-gold: #f6c700;
+        --cp-dark: #0a0a0f;
+        --cp-card: #14141f;
+        --cp-surface: #1c1c2b;
+        --cp-border: rgba(255, 255, 255, 0.06);
+        --cp-text: #e2e2e8;
+        --cp-muted: #8b8b9e;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--cp-dark);
+        color: var(--cp-text);
+        font-family: "Inter", sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        overflow: hidden;
+        position: relative;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: "Outfit", sans-serif;
+      }
 
-        body {
-            background-color: #0f0f0f;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
+      .floater {
+        position: absolute;
+        font-size: 2rem;
+        opacity: 0.12;
+        animation: floatUp linear infinite;
+        pointer-events: none;
+        z-index: 0;
+      }
+      @keyframes floatUp {
+        0% {
+          transform: translateY(100vh) rotate(0deg);
+          opacity: 0.12;
         }
+        100% {
+          transform: translateY(-10vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
 
-        .error-container {
-            text-align: center;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            padding: 60px 40px;
-            border-radius: 12px;
-            border: 2px solid var(--primary-color);
-            box-shadow: 0 8px 20px rgba(229, 9, 20, 0.3);
-            max-width: 600px;
-        }
+      .error-card {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        background: var(--cp-card);
+        border: 1px solid var(--cp-border);
+        border-radius: 24px;
+        padding: 3.5rem 3rem;
+        max-width: 520px;
+        box-shadow: 0 12px 50px rgba(0, 0, 0, 0.4);
+      }
 
-        .error-code {
-            font-size: 5rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin-bottom: 20px;
+      .glitch {
+        font-family: "Outfit", sans-serif;
+        font-size: 7rem;
+        font-weight: 900;
+        color: var(--cp-red);
+        position: relative;
+        display: inline-block;
+        letter-spacing: 6px;
+      }
+      .glitch::before,
+      .glitch::after {
+        content: "404";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .glitch::before {
+        color: var(--cp-gold);
+        z-index: -1;
+        animation: glitch1 2s infinite linear;
+      }
+      .glitch::after {
+        color: #3b82f6;
+        z-index: -2;
+        animation: glitch2 2s infinite linear;
+      }
+      @keyframes glitch1 {
+        0%,
+        100% {
+          clip-path: inset(0 0 90% 0);
+          transform: translate(0);
         }
+        20% {
+          clip-path: inset(20% 0 60% 0);
+          transform: translate(-4px, 2px);
+        }
+        40% {
+          clip-path: inset(50% 0 20% 0);
+          transform: translate(4px, -2px);
+        }
+        60% {
+          clip-path: inset(70% 0 10% 0);
+          transform: translate(-2px, 3px);
+        }
+        80% {
+          clip-path: inset(10% 0 70% 0);
+          transform: translate(3px, -1px);
+        }
+      }
+      @keyframes glitch2 {
+        0%,
+        100% {
+          clip-path: inset(90% 0 0 0);
+          transform: translate(0);
+        }
+        20% {
+          clip-path: inset(60% 0 20% 0);
+          transform: translate(3px, -2px);
+        }
+        40% {
+          clip-path: inset(20% 0 50% 0);
+          transform: translate(-3px, 2px);
+        }
+        60% {
+          clip-path: inset(10% 0 70% 0);
+          transform: translate(2px, -3px);
+        }
+        80% {
+          clip-path: inset(70% 0 10% 0);
+          transform: translate(-4px, 1px);
+        }
+      }
 
-        .error-title {
-            font-size: 2rem;
-            margin-bottom: 15px;
-            color: #e0e0e0;
-        }
+      .error-title {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 1rem 0 0.5rem;
+      }
+      .error-msg {
+        color: var(--cp-muted);
+        font-size: 1rem;
+        margin-bottom: 2rem;
+        max-width: 380px;
+        margin-left: auto;
+        margin-right: auto;
+      }
 
-        .error-message {
-            font-size: 1.1rem;
-            color: #b0b0b0;
-            margin-bottom: 30px;
-        }
-
-        .btn-home {
-            background-color: var(--primary-color);
-            border: none;
-            color: white;
-            font-weight: bold;
-            padding: 12px 30px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-home:hover {
-            background-color: #c40812;
-            transform: scale(1.02);
-        }
+      .btn-home {
+        background: linear-gradient(135deg, var(--cp-red), var(--cp-red-dark));
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 0.85rem 2.4rem;
+        font-weight: 700;
+        font-size: 1rem;
+        box-shadow: 0 4px 20px rgba(229, 9, 20, 0.3);
+        transition: all 0.25s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .btn-home:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(229, 9, 20, 0.5);
+        color: #fff;
+      }
     </style>
-</head>
-<body>
-    <div class="error-container">
-        <div class="error-code">404</div>
-        <div class="error-title">Oops! Page Not Found</div>
-        <p class="error-message"><%= message || 'The page you are looking for does not exist. It might have been moved or deleted.' %></p>
-        <a href="/" class="btn btn-home btn-lg">
-            🏠 Back to Home
-        </a>
+  </head>
+  <body>
+    <!-- Floating popcorn emojis -->
+    <script>
+      const emojis = ["🍿", "🎬", "🎥", "🎞️", "⭐", "🎭"];
+      for (let i = 0; i < 20; i++) {
+        const d = document.createElement("div");
+        d.className = "floater";
+        d.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        d.style.left = Math.random() * 100 + "vw";
+        d.style.fontSize = 1.2 + Math.random() * 2 + "rem";
+        d.style.animationDuration = 6 + Math.random() * 8 + "s";
+        d.style.animationDelay = Math.random() * 6 + "s";
+        document.body.appendChild(d);
+      }
+    </script>
+
+    <div class="error-card">
+      <div class="glitch">404</div>
+      <h2 class="error-title">Oops! Page Not Found</h2>
+      <p class="error-msg">
+        <%= message || 'The page you are looking for does not exist. It might
+        have been moved or deleted.' %>
+      </p>
+      <a href="/" class="btn-home">
+        <i class="bi bi-house-fill"></i> Back to Home
+      </a>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+  </body>
 </html>

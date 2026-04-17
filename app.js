@@ -1,139 +1,249 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+
+const User = require("./models/User");
+const Movie = require("./models/Movie");
+const Booking = require("./models/Booking");
 
 const app = express();
 const PORT = 3000;
+const JWT_SECRET = "cinemapro-secret-key-2026";
+const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/cinemapro";
 
-app.use(bodyParser.json());
-app.set('view engine', 'ejs');
+app.use(express.json());
+app.use(cookieParser());
+app.set("view engine", "ejs");
 
-let movies = [
-  {
-    id: 1,
-    title: "The Matrix Reloaded",
-    genre: "Sci-Fi",
-    duration: "138 min",
-    rating: "8.0/10",
-    image: "https://m.media-amazon.com/images/M/MV5BNjAxYjkxNjktYTU0YS00NjFhLWIyMDEtMzEzMTJjMzRkMzQ1XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg"
-  },
-  {
-    id: 2,
-    title: "Inception",
-    genre: "Sci-Fi/Thriller",
-    duration: "148 min",
-    rating: "8.8/10",
-    image: "https://m.media-amazon.com/images/M/MV5BZjhkNjM0ZTMtNGM5MC00ZTQ3LTk3YmYtZTkzYzdiNWE0ZTA2XkEyXkFqcGc@._V1_.jpg"
-  },
-  {
-    id: 3,
-    title: "The Dark Knight",
-    genre: "Action/Crime",
-    duration: "152 min",
-    rating: "9.0/10",
-    image: "https://i.redd.it/z19ndjd7m2ac1.jpeg"
-  },
-  {
-    id: 4,
-    title: "Interstellar",
-    genre: "Sci-Fi/Drama",
-    duration: "169 min",
-    rating: "8.6/10",
-    image: "https://m.media-amazon.com/images/I/81pbgU7wG-L._AC_UF1000,1000_QL80_.jpg"
+// ── MongoDB Connection ───────────────────────────────────────────────────────
+mongoose
+  .connect(MONGO_URI)
+  .then(async () => {
+    console.log("✅ Connected to MongoDB");
+
+    // Seed default admin user if no users exist
+    const userCount = await User.countDocuments();
+    if (userCount === 0) {
+      await User.create({
+        name: "Admin User",
+        email: "admin@cinema.com",
+        password: "admin123",
+        role: "admin",
+      });
+      await User.create({
+        name: "John Doe",
+        email: "john@example.com",
+        password: "john123",
+        role: "user",
+      });
+      console.log("🌱 Seeded default users (admin@cinema.com / admin123)");
+    }
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err.message);
+    process.exit(1);
+  });
+
+// ── Auth Middleware ───────────────────────────────────────────────────────────
+app.use((req, res, next) => {
+  const token = req.cookies.token;
+  if (token) {
+    try {
+      res.locals.user = jwt.verify(token, JWT_SECRET);
+    } catch {
+      res.locals.user = null;
+    }
+  } else {
+    res.locals.user = null;
   }
-];
-
-let bookings = [];
-
-let movieIdCounter = 5;
-
-let bookingIdCounter = 1;
-
-app.get('/', (req, res) => {
-  res.render('index', { movies: movies });
+  next();
 });
 
-app.get('/movie/:id', (req, res) => {
-  const movie = movies.find(m => m.id === parseInt(req.params.id));
-  if (!movie) {
-    return res.status(404).render('404', { message: 'Movie not found' });
+function signToken(user) {
+  return jwt.sign(
+    { id: user._id || user.id, name: user.name, email: user.email, role: user.role },
+    JWT_SECRET,
+  );
+}
+
+function setTokenCookie(res, token) {
+  res.cookie("token", token, {
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+}
+
+function requireAuth(req, res, next) {
+  if (res.locals.user) return next();
+  res.cookie("returnTo", req.originalUrl, { httpOnly: true });
+  return res.redirect("/login");
+}
+
+function requireAdmin(req, res, next) {
+  const user = res.locals.user;
+  if (user && user.role === "admin") return next();
+  if (!user) {
+    res.cookie("returnTo", req.originalUrl, { httpOnly: true });
+    return res.redirect("/login");
   }
-  res.render('booking', { movie: movie });
+  return res
+    .status(403)
+    .render("404", { message: "Access denied. Admin privileges required." });
+}
+
+// ── Auth Routes ──────────────────────────────────────────────────────────────
+app.get("/login", (req, res) => {
+  if (res.locals.user) return res.redirect("/");
+  res.render("login", { error: null });
 });
 
-app.post('/book', (req, res) => {
-  const { movieId, name, email, seats } = req.body;
-  const movie = movies.find(m => m.id === parseInt(movieId));
-  
-  if (!movie) {
-    return res.status(400).json({ success: false, message: 'Movie not found' });
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email, password });
+  if (!user) {
+    return res.render("login", { error: "Invalid email or password" });
   }
 
-  const booking = {
-    id: bookingIdCounter++,
-    movieId: parseInt(movieId),
+  setTokenCookie(res, signToken(user));
+
+  const returnTo = req.cookies.returnTo || "/";
+  res.clearCookie("returnTo");
+  res.redirect(returnTo);
+});
+
+app.get("/register", (req, res) => {
+  if (res.locals.user) return res.redirect("/");
+  res.render("register", { error: null });
+});
+
+app.post("/register", async (req, res) => {
+  const { name, email, password, confirmPassword } = req.body;
+
+  if (!name || !email || !password)
+    return res.render("register", { error: "All fields are required" });
+  if (password !== confirmPassword)
+    return res.render("register", { error: "Passwords do not match" });
+  if (password.length < 4)
+    return res.render("register", {
+      error: "Password must be at least 4 characters",
+    });
+
+  const existingUser = await User.findOne({ email: email.trim().toLowerCase() });
+  if (existingUser)
+    return res.render("register", { error: "Email already registered" });
+
+  const newUser = await User.create({
+    name: name.trim(),
+    email: email.trim().toLowerCase(),
+    password,
+    role: "user",
+  });
+
+  setTokenCookie(res, signToken(newUser));
+
+  const returnTo = req.cookies.returnTo || "/";
+  res.clearCookie("returnTo");
+  res.redirect(returnTo);
+});
+
+app.get("/logout", (req, res) => {
+  res.clearCookie("token");
+  res.redirect("/");
+});
+
+// ── Page Routes ──────────────────────────────────────────────────────────────
+app.get("/", async (req, res) => {
+  const movies = await Movie.find();
+  const genres = [...new Set(movies.map((m) => m.genre))];
+  res.render("index", { movies, genres });
+});
+
+app.get("/movie/:id", requireAuth, async (req, res) => {
+  const movie = await Movie.findById(req.params.id).catch(() => null);
+  if (!movie)
+    return res.status(404).render("404", { message: "Movie not found" });
+  res.render("booking", { movie });
+});
+
+app.post("/book", requireAuth, async (req, res) => {
+  const { movieId, seats } = req.body;
+  const movie = await Movie.findById(movieId).catch(() => null);
+  const user = res.locals.user;
+
+  if (!movie)
+    return res.status(400).json({ success: false, message: "Movie not found" });
+
+  const booking = await Booking.create({
+    movieId: movie._id,
     movieTitle: movie.title,
-    name: name,
-    email: email,
+    userId: user.id,
+    name: user.name,
+    email: user.email,
     seats: parseInt(seats),
-    totalPrice: parseInt(seats) * 12, // $12 per seat
+    totalPrice: parseInt(seats) * 12,
     bookingDate: new Date().toLocaleDateString(),
-    bookingTime: new Date().toLocaleTimeString()
-  };
+    bookingTime: new Date().toLocaleTimeString(),
+  });
 
-  bookings.push(booking);
-  res.json({ success: true, bookingId: booking.id });
+  res.json({ success: true, bookingId: booking._id });
 });
 
-app.get('/ticket/:id', (req, res) => {
-  const booking = bookings.find(b => b.id === parseInt(req.params.id));
-  if (!booking) {
-    return res.status(404).render('404', { message: 'Booking not found' });
-  }
-  res.render('ticket', { booking: booking });
+app.get("/ticket/:id", requireAuth, async (req, res) => {
+  const booking = await Booking.findById(req.params.id).catch(() => null);
+  if (!booking)
+    return res.status(404).render("404", { message: "Booking not found" });
+
+  const user = res.locals.user;
+  if (user.role !== "admin" && booking.userId.toString() !== user.id)
+    return res
+      .status(403)
+      .render("404", { message: "Access denied. This is not your ticket." });
+
+  res.render("ticket", { booking });
 });
 
-
-app.get('/admin', (req, res) => {
-  res.render('admin', { movies: movies, bookings: bookings });
+// ── Admin Routes ─────────────────────────────────────────────────────────────
+app.get("/admin", requireAdmin, async (req, res) => {
+  const movies = await Movie.find();
+  const bookings = await Booking.find();
+  const totalRevenue = bookings.reduce((sum, b) => sum + b.seats * 12 * 1.1, 0);
+  res.render("admin", { movies, bookings, totalRevenue });
 });
 
-app.post('/api/movie', (req, res) => {
+app.post("/api/movie", requireAdmin, async (req, res) => {
   const { title, genre, duration, rating } = req.body;
+  if (!title || !genre || !duration || !rating)
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields are required" });
 
-  if (!title || !genre || !duration || !rating) {
-    return res.status(400).json({ success: false, message: 'All fields are required' });
-  }
-
-  const newMovie = {
-    id: movieIdCounter++,
-    title: title,
-    genre: genre,
-    duration: duration,
-    rating: rating,
-    image: `https://via.placeholder.com/300x450/1a1a1a/aaaaaa?text=${encodeURIComponent(title)}`
-  };
-
-  movies.push(newMovie);
-  res.json({ success: true, message: 'Movie added successfully', movie: newMovie });
+  const newMovie = await Movie.create({ title, genre, duration, rating });
+  res.json({
+    success: true,
+    message: "Movie added successfully",
+    movie: newMovie,
+  });
 });
 
-app.delete('/api/movie/:id', (req, res) => {
-  const movieId = parseInt(req.params.id);
-  const index = movies.findIndex(m => m.id === movieId);
+app.delete("/api/movie/:id", requireAdmin, async (req, res) => {
+  const movie = await Movie.findByIdAndDelete(req.params.id).catch(() => null);
+  if (!movie)
+    return res.status(404).json({ success: false, message: "Movie not found" });
 
-  if (index === -1) {
-    return res.status(404).json({ success: false, message: 'Movie not found' });
-  }
-
-  const deletedMovie = movies.splice(index, 1)[0];
-  res.json({ success: true, message: 'Movie deleted successfully', movie: deletedMovie });
+  res.json({
+    success: true,
+    message: "Movie deleted successfully",
+    movie,
+  });
 });
+
+// ── 404 ───────────────────────────────────────────────────────────────────────
 
 app.use((req, res) => {
-  res.status(404).render('404', { message: 'Page not found' });
+  res.status(404).render("404", { message: "Page not found" });
 });
 
-
 app.listen(PORT, () => {
-  console.log(`Movie Ticketing System running on http://localhost:${PORT}`);
+  console.log(`🎬 CinemaPro running on http://localhost:${PORT}`);
 });
