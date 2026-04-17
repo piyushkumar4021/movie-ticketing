@@ -272,7 +272,7 @@
         <div class="row g-4" id="movieGrid">
             <% movies.forEach((movie, i) => { %>
                 <div class="col-sm-6 col-lg-3 reveal-card movie-col" data-genre="<%= movie.genre %>" data-title="<%= movie.title.toLowerCase() %>" style="transition-delay: <%= i * 0.1 %>s">
-                    <div class="movie-card" id="card-<%= movie.id %>">
+                    <div class="movie-card" id="card-<%= movie._id %>">
                         <div class="poster-wrap">
                             <img src="<%= movie.image %>" alt="<%= movie.title %>" loading="lazy">
                             <div class="poster-overlay"></div>
@@ -284,7 +284,7 @@
                                 <span><i class="bi bi-tag-fill"></i> <%= movie.genre %></span>
                                 <span><i class="bi bi-clock-fill"></i> <%= movie.duration %></span>
                             </div>
-                            <a href="/movie/<%= movie.id %>" class="btn btn-book">
+                            <a href="/movie/<%= movie._id %>" class="btn btn-book">
                                 <i class="bi bi-ticket-perforated-fill"></i> Book Now
                             </a>
                         </div>

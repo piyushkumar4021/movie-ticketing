@@ -165,7 +165,7 @@
             </div>
 
             <form id="bookingForm">
-                <input type="hidden" name="movieId" value="<%= movie.id %>">
+                <input type="hidden" name="movieId" value="<%= movie._id %>">
 
                 <!-- Section 1: Seats -->
                 <div id="seatSection">
@@ -345,7 +345,7 @@
                 didOpen: () => {
                     setTimeout(async () => {
                         try {
-                            const res = await fetch('/book', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({movieId:parseInt(movieId),seats})});
+                            const res = await fetch('/book', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({movieId,seats})});
                             const data = await res.json();
                             if (data.success) {
                                 Swal.fire({icon:'success',title:'Payment Successful!',text:'Redirecting to your ticket…',background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914',timer:2000,timerProgressBar:true,didClose:()=>{window.location.href='/ticket/'+data.bookingId}});

@@ -10,42 +10,23 @@ const Booking = require("./models/Booking");
 const app = express();
 const PORT = 3000;
 const JWT_SECRET = "cinemapro-secret-key-2026";
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/cinemapro";
+const MONGO_URI =
+  "mongodb://movie-ticketing:hnqB8drowHuphovh@ac-ld4tn1l-shard-00-00.fk0tuga.mongodb.net:27017,ac-ld4tn1l-shard-00-01.fk0tuga.mongodb.net:27017,ac-ld4tn1l-shard-00-02.fk0tuga.mongodb.net:27017/movie-ticketing?ssl=true&replicaSet=atlas-fuz2k5-shard-0&authSource=admin&appName=Cluster0";
 
 app.use(express.json());
 app.use(cookieParser());
 app.set("view engine", "ejs");
 
-// ── MongoDB Connection ───────────────────────────────────────────────────────
 mongoose
   .connect(MONGO_URI)
   .then(async () => {
-    console.log("✅ Connected to MongoDB");
-
-    // Seed default admin user if no users exist
-    const userCount = await User.countDocuments();
-    if (userCount === 0) {
-      await User.create({
-        name: "Admin User",
-        email: "admin@cinema.com",
-        password: "admin123",
-        role: "admin",
-      });
-      await User.create({
-        name: "John Doe",
-        email: "john@example.com",
-        password: "john123",
-        role: "user",
-      });
-      console.log("🌱 Seeded default users (admin@cinema.com / admin123)");
-    }
+    console.log("Connected to MongoDB");
   })
   .catch((err) => {
-    console.error("❌ MongoDB connection error:", err.message);
+    console.error("MongoDB connection error:", err.message);
     process.exit(1);
   });
 
-// ── Auth Middleware ───────────────────────────────────────────────────────────
 app.use((req, res, next) => {
   const token = req.cookies.token;
   if (token) {
@@ -62,7 +43,12 @@ app.use((req, res, next) => {
 
 function signToken(user) {
   return jwt.sign(
-    { id: user._id || user.id, name: user.name, email: user.email, role: user.role },
+    {
+      id: user._id || user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
     JWT_SECRET,
   );
 }
@@ -129,7 +115,9 @@ app.post("/register", async (req, res) => {
       error: "Password must be at least 4 characters",
     });
 
-  const existingUser = await User.findOne({ email: email.trim().toLowerCase() });
+  const existingUser = await User.findOne({
+    email: email.trim().toLowerCase(),
+  });
   if (existingUser)
     return res.render("register", { error: "Email already registered" });
 
@@ -212,13 +200,19 @@ app.get("/admin", requireAdmin, async (req, res) => {
 });
 
 app.post("/api/movie", requireAdmin, async (req, res) => {
-  const { title, genre, duration, rating } = req.body;
+  const { title, genre, duration, rating, image } = req.body;
   if (!title || !genre || !duration || !rating)
     return res
       .status(400)
       .json({ success: false, message: "All fields are required" });
 
-  const newMovie = await Movie.create({ title, genre, duration, rating });
+  const newMovie = await Movie.create({
+    title,
+    genre,
+    duration,
+    rating,
+    image: image || "",
+  });
   res.json({
     success: true,
     message: "Movie added successfully",

@@ -217,13 +217,13 @@
                         <tbody>
                             <% movies.forEach(movie => { %>
                             <tr data-search="<%= movie.title.toLowerCase() %> <%= movie.genre.toLowerCase() %>">
-                                <td><span class="badge badge-id"><%= movie.id %></span></td>
+                                <td><span class="badge badge-id"><%= movie._id.toString().slice(-6).toUpperCase() %></span></td>
                                 <td><strong><%= movie.title %></strong></td>
                                 <td><%= movie.genre %></td>
                                 <td><%= movie.duration %></td>
                                 <td><i class="bi bi-star-fill text-warning me-1"></i><%= movie.rating %></td>
                                 <td>
-                                    <button class="btn btn-del" onclick="deleteMovie(<%= movie.id %>, '<%= movie.title %>', this)">
+                                    <button class="btn btn-del" onclick="deleteMovie('<%= movie._id %>', '<%= movie.title %>', this)">
                                         <i class="bi bi-trash3-fill me-1"></i>Delete
                                     </button>
                                 </td>
@@ -252,7 +252,7 @@
                         <tbody>
                             <% bookings.forEach(booking => { %>
                             <tr data-search="<%= booking.name.toLowerCase() %> <%= booking.email.toLowerCase() %> <%= booking.movieTitle.toLowerCase() %>">
-                                <td><span class="badge badge-id">BOOK-<%= String(booking.id).padStart(5, '0') %></span></td>
+                                <td><span class="badge badge-id"><%= booking._id.toString().slice(-6).toUpperCase() %></span></td>
                                 <td><strong><%= booking.name %></strong></td>
                                 <td><%= booking.email %></td>
                                 <td><%= booking.movieTitle %></td>
@@ -296,6 +296,10 @@
                         <div class="mb-3">
                             <label for="movieRating" class="form-label">IMDB Rating <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="movieRating" placeholder="e.g. 8.5/10" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="movieImage" class="form-label">Poster Image URL</label>
+                            <input type="text" class="form-control" id="movieImage" placeholder="https://example.com/poster.jpg">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -351,11 +355,12 @@
             const genre = document.getElementById('movieGenre').value;
             const duration = document.getElementById('movieDuration').value;
             const rating = document.getElementById('movieRating').value;
+            const image = document.getElementById('movieImage').value;
 
             try {
                 const res = await fetch('/api/movie', {
                     method: 'POST', headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({title, genre, duration, rating})
+                    body: JSON.stringify({title, genre, duration, rating, image})
                 });
                 const data = await res.json();
                 if (data.success) {

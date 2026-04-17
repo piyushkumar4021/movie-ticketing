@@ -195,7 +195,7 @@
 
                     <div class="conf-code">
                         <div class="label">Confirmation Number</div>
-                        <div class="code">BOOK-<%= String(booking.id).padStart(5, '0') %></div>
+                        <div class="code"><%= booking._id.toString().slice(-8).toUpperCase() %></div>
                     </div>
 
                     <div class="info-block">
@@ -261,7 +261,7 @@
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
     <script>
-        QRCode.toCanvas(document.getElementById('qrCode'), 'CINEMAPRO-BOOK-<%= String(booking.id).padStart(5,"0") %>', {
+        QRCode.toCanvas(document.getElementById('qrCode'), 'CINEMAPRO-<%= booking._id %>', {
             width: 130, margin: 1,
             color: { dark: '#0a0a0f', light: '#ffffff' }
         });
@@ -323,7 +323,7 @@
             try {
                 const c = await html2canvas(ticket, {backgroundColor:'#0a0a0f',scale:2});
                 const link = document.createElement('a');
-                link.download = 'CinemaPro-Ticket-BOOK-<%= String(booking.id).padStart(5,"0") %>.png';
+                link.download = 'CinemaPro-Ticket-<%= booking._id.toString().slice(-8).toUpperCase() %>.png';
                 link.href = c.toDataURL();
                 link.click();
             } catch(e) {
