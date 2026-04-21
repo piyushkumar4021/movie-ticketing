@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Book your tickets for <%= movie.title %> at CinemaPro — select seats, enter details, and confirm in seconds.">
+    <meta name="description" content="Book your tickets for <%= movie.title %> at CinemaPro — select seats, pay securely with Razorpay.">
     <title>Book Tickets — <%= movie.title %> | CinemaPro</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -87,6 +87,9 @@
         .btn-cancel{background:var(--cp-surface);color:var(--cp-muted);border:1px solid var(--cp-border);border-radius:12px;padding:.9rem 2rem;font-weight:600;transition:all .2s}
         .btn-cancel:hover{background:#2a2a3a;color:#fff}
 
+        .razorpay-badge{display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:1rem;font-size:.78rem;color:var(--cp-muted)}
+        .razorpay-badge i{color:#28a745}
+
         @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
         .shake{animation:shake .4s ease}
 
@@ -147,7 +150,7 @@
         <div class="steps">
             <div class="step active" id="step1"><span class="step-num">1</span> Select Seats</div>
             <div class="step-line" id="line1"></div>
-            <div class="step" id="step2"><span class="step-num">2</span> Confirm & Pay</div>
+            <div class="step" id="step2"><span class="step-num">2</span> Pay with Razorpay</div>
         </div>
 
         <div class="booking-wrap">
@@ -183,18 +186,18 @@
                     <div class="price-banner">
                         <div>
                             <div style="font-size:.85rem;color:var(--cp-muted)">Selected: <strong id="seatCount" class="text-white">0</strong> seat(s)</div>
-                            <div style="font-size:.78rem;color:var(--cp-muted)">$12.00 per seat</div>
+                            <div style="font-size:.78rem;color:var(--cp-muted)">₹<%= seatPrice %> per seat</div>
                         </div>
-                        <div class="price-amount" id="totalPrice">$0</div>
+                        <div class="price-amount" id="totalPrice">₹0</div>
                     </div>
                     <button type="button" class="btn btn-pay" id="btnToDetails" disabled>
-                        Continue to Details <i class="bi bi-arrow-right-short"></i>
+                        Continue to Payment <i class="bi bi-arrow-right-short"></i>
                     </button>
                 </div>
 
                 <!-- Section 2: Confirm & Pay -->
                 <div id="detailsSection" class="d-none">
-                    <h5 class="mb-3" style="font-weight:700;color:#fff"><i class="bi bi-shield-check text-danger me-2"></i>Confirm Booking</h5>
+                    <h5 class="mb-3" style="font-weight:700;color:#fff"><i class="bi bi-shield-check text-danger me-2"></i>Confirm & Pay</h5>
                     <div class="user-info-card">
                         <div class="ui-avatar"><%= user.name.charAt(0).toUpperCase() %></div>
                         <div>
@@ -206,13 +209,16 @@
                         <div>
                             <div style="font-size:.85rem;color:var(--cp-muted)">Seats: <strong class="text-white seat-count-mirror">0</strong> | Total</div>
                         </div>
-                        <div class="price-amount total-price-mirror">$0</div>
+                        <div class="price-amount total-price-mirror">₹0</div>
                     </div>
                     <div class="d-flex gap-3 mt-3">
                         <button type="button" class="btn btn-cancel flex-fill" id="btnBackSeats"><i class="bi bi-arrow-left-short"></i> Back</button>
                         <button type="submit" class="btn btn-pay flex-fill" id="payButton">
-                            <i class="bi bi-credit-card-fill me-2"></i>Confirm & Pay
+                            <i class="bi bi-credit-card-fill me-2"></i>Pay with Razorpay
                         </button>
+                    </div>
+                    <div class="razorpay-badge">
+                        <i class="bi bi-shield-lock-fill"></i> Secured by Razorpay — 100% Safe & Encrypted
                     </div>
                 </div>
             </form>
@@ -227,8 +233,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.28/dist/sweetalert2.all.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <script>
+        const SEAT_PRICE = <%= seatPrice %>;
+        const RAZORPAY_KEY_ID = '<%= razorpayKeyId %>';
         const rows = 6, cols = 8;
         const rowLabels = ['A','B','C','D','E','F'];
         const seatGrid = document.getElementById('seatGrid');
@@ -236,7 +245,6 @@
         // Get booked seats from server
         const bookedSeatsArray = <%- JSON.stringify(bookedSeats || []) %>;
         const bookedSeatsSet = new Set(bookedSeatsArray);
-        console.log('Booked seats:', bookedSeatsSet);
 
         for (let r = 0; r < rows; r++) {
             const rowDiv = document.createElement('div');
@@ -277,7 +285,7 @@
         let currentDisplayPrice = 0;
         function updatePrice() {
             const count = selectedSeats.size;
-            const total = count * 12;
+            const total = count * SEAT_PRICE;
             document.getElementById('seatCount').textContent = count;
             document.querySelectorAll('.seat-count-mirror').forEach(e => e.textContent = count);
             document.getElementById('btnToDetails').disabled = count === 0;
@@ -285,7 +293,7 @@
             // Animate price
             animateValue('totalPrice', currentDisplayPrice, total, 300);
             document.querySelectorAll('.total-price-mirror').forEach(el => {
-                el.textContent = '$' + total;
+                el.textContent = '₹' + total;
             });
             currentDisplayPrice = total;
         }
@@ -299,7 +307,7 @@
                 const progress = Math.min(elapsed / duration, 1);
                 const eased = 1 - Math.pow(1 - progress, 3);
                 const val = Math.round(start + range * eased);
-                el.textContent = '$' + val;
+                el.textContent = '₹' + val;
                 if (progress < 1) requestAnimationFrame(step);
             }
             requestAnimationFrame(step);
@@ -328,35 +336,119 @@
             document.getElementById('line1').classList.remove('active');
         });
 
+        // ── Razorpay Payment Flow ────────────────────────────────────────────
         document.getElementById('bookingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const seatIds = Array.from(selectedSeats);
             const movieId = document.querySelector('input[name="movieId"]').value;
+            const payButton = document.getElementById('payButton');
 
-            // Activate step 2 as done
-            document.getElementById('step2').classList.remove('active');
-            document.getElementById('step2').classList.add('done');
+            payButton.disabled = true;
+            payButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating order...';
 
-            Swal.fire({
-                title:'Processing Payment',
-                html:'<div class="spinner-border text-danger" role="status"></div><p class="mt-3" style="color:#8b8b9e">Securing your seats…</p>',
-                background:'#14141f',color:'#e2e2e8',allowOutsideClick:false,allowEscapeKey:false,showConfirmButton:false,
-                didOpen: () => {
-                    setTimeout(async () => {
+            try {
+                // Step 1: Create Razorpay order on our server
+                const orderRes = await fetch('/create-order', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ movieId, seatIds })
+                });
+                const orderData = await orderRes.json();
+
+                if (!orderData.success) {
+                    Swal.fire({icon:'error',title:'Order Failed',text:orderData.message,background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914'});
+                    payButton.disabled = false;
+                    payButton.innerHTML = '<i class="bi bi-credit-card-fill me-2"></i>Pay with Razorpay';
+                    return;
+                }
+
+                // Step 2: Open Razorpay Checkout
+                const options = {
+                    key: RAZORPAY_KEY_ID,
+                    amount: orderData.amount,
+                    currency: orderData.currency,
+                    name: 'CinemaPro',
+                    description: 'Movie Tickets — ' + seatIds.length + ' seat(s)',
+                    order_id: orderData.orderId,
+                    prefill: {
+                        name: '<%= user.name %>',
+                        email: '<%= user.email %>'
+                    },
+                    theme: {
+                        color: '#e50914'
+                    },
+                    handler: async function(response) {
+                        // Step 3: Verify payment on our server
+                        payButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verifying payment...';
+
                         try {
-                            const res = await fetch('/book', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({movieId,seatIds})});
-                            const data = await res.json();
-                            if (data.success) {
-                                Swal.fire({icon:'success',title:'Payment Successful!',text:'Redirecting to your ticket…',background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914',timer:2000,timerProgressBar:true,didClose:()=>{window.location.href='/ticket/'+data.bookingId}});
+                            const verifyRes = await fetch('/verify-payment', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    movieId: movieId,
+                                    seatIds: seatIds
+                                })
+                            });
+                            const verifyData = await verifyRes.json();
+
+                            if (verifyData.success) {
+                                document.getElementById('step2').classList.remove('active');
+                                document.getElementById('step2').classList.add('done');
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Payment Successful! 🎉',
+                                    html: '<p style="color:#8b8b9e">Payment ID: <strong>' + response.razorpay_payment_id + '</strong></p><p style="color:#8b8b9e">Redirecting to your ticket…</p>',
+                                    background: '#14141f',
+                                    color: '#e2e2e8',
+                                    confirmButtonColor: '#e50914',
+                                    timer: 3000,
+                                    timerProgressBar: true,
+                                    didClose: () => { window.location.href = '/ticket/' + verifyData.bookingId; }
+                                });
                             } else {
-                                Swal.fire({icon:'error',title:'Booking Failed',text:data.message,background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914'});
+                                Swal.fire({icon:'error',title:'Verification Failed',text:verifyData.message,background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914'});
+                                payButton.disabled = false;
+                                payButton.innerHTML = '<i class="bi bi-credit-card-fill me-2"></i>Pay with Razorpay';
                             }
                         } catch(err) {
-                            Swal.fire({icon:'error',title:'Error',text:'An unexpected error occurred.',background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914'});
+                            Swal.fire({icon:'error',title:'Error',text:'Payment verification failed. Please contact support.',background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914'});
+                            payButton.disabled = false;
+                            payButton.innerHTML = '<i class="bi bi-credit-card-fill me-2"></i>Pay with Razorpay';
                         }
-                    }, 2000);
-                }
-            });
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            payButton.disabled = false;
+                            payButton.innerHTML = '<i class="bi bi-credit-card-fill me-2"></i>Pay with Razorpay';
+                            Swal.fire({icon:'info',title:'Payment Cancelled',text:'You cancelled the payment. Your seats are not booked yet.',background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914'});
+                        }
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function(response) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Payment Failed',
+                        text: response.error.description || 'An error occurred during payment.',
+                        background: '#14141f',
+                        color: '#e2e2e8',
+                        confirmButtonColor: '#e50914'
+                    });
+                    payButton.disabled = false;
+                    payButton.innerHTML = '<i class="bi bi-credit-card-fill me-2"></i>Pay with Razorpay';
+                });
+                rzp.open();
+
+            } catch(err) {
+                Swal.fire({icon:'error',title:'Error',text:'An unexpected error occurred. Please try again.',background:'#14141f',color:'#e2e2e8',confirmButtonColor:'#e50914'});
+                payButton.disabled = false;
+                payButton.innerHTML = '<i class="bi bi-credit-card-fill me-2"></i>Pay with Razorpay';
+            }
         });
     </script>
 </body>
